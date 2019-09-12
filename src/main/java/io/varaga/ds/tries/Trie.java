@@ -3,84 +3,85 @@ package io.varaga.ds.tries;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Implementation of Trie. Application for a word complete searches.
+ * @author varagac
+ *
+ */
 public class Trie {
-
-    //DS Node for trie
-	class TrieNode {
-	   Map<Character, TrieNode> children = new HashMap<>();
-	   boolean isCompleteWord;
-	   
-	   TrieNode(boolean isComplete){
-	   		//children.put(c, this);
-			this.isCompleteWord = isComplete;
-	   }
-	   
+	
+	TrieNode root;
+	
+	public Trie() {
+		root = new TrieNode(' ');
 	}
 	
-	public TrieNode addNode(TrieNode parent, Character c, boolean isComplete) {
-		if (parent == null) {
-			return new TrieNode(isComplete);
-		}
+	/**
+	 * Inserts the given word into the Trie block and marks the word as complete.
+	 * 
+	 * @param word - word to insert into.
+	 */
+	public void insertWord(String word) {
+		TrieNode current = root;
 		
-		TrieNode child = new TrieNode(isComplete);
-		TrieNode node = parent.children.get(c);
-		if(node != null) {
-			return node;
-		}
-		parent.children.put(c, child);
-		return child;
-	}
-
-    public TrieNode getNode(TrieNode tree, String literals) {
-		//check edge case
-		TrieNode tempNode = tree;
-		for (Character c: literals.toCharArray()) {
-			tempNode = tempNode.children.get(c);
-			if(tempNode == null) {
-				return null;
+		for (Character c: word.toCharArray()) {
+			if (current.getChildren().get(c) == null) {
+				current.getChildren().put(c, new TrieNode(c));
 			}
+			current = current.getChildren().get(c);
 		}
-		//we should have the trieNode from the root that has the literals walked through
-		return tempNode;
+		current.isWord = true;
+	}
+	
+	/**
+	 * Checks that the given word is in the Trie.
+	 * 
+	 * @param word - word to search for
+	 * @return - boolean if the word is found and is complete.
+	 */
+	public boolean searchWord(final String word) {
+		TrieNode current = root;
+		for (Character c: word.toCharArray()) {
+			if (current.getChildren().get(c) == null) {
+				return false;
+			}
+			current = current.getChildren().get(c);
+		}
+		return current.isWord;
 	}
 
-    public static void main(String ...args) {
-		Trie trie = new Trie();
-		TrieNode root = trie.new TrieNode(false);
-		TrieNode child = trie.addNode(root, 'c', false);
-		child = trie.addNode(child, 'h', false);
-		child = trie.addNode(child, 'a', false);
-		child = trie.addNode(child, 'k', false);
-		child = trie.addNode(child, 'k', false);
-		child = trie.addNode(child, 'u', true);
-		child = trie.addNode(child, 'r', false);
-		
-		//
-		child = trie.addNode(root, 'c', false);
-		
-		child = trie.getNode(root, "c");
-		child = trie.addNode(child, 'a', false);
-		child = trie.addNode(child, 'r', true);
-		child = trie.addNode(child, 't', true);
-		
-		//getNode
-		TrieNode node = trie.getNode(root, "chak");
-		System.out.println(node.isCompleteWord);
-		node = trie.getNode(root, "chakku");
-		System.out.println(node.isCompleteWord);
-		node = trie.getNode(root, "chakkur");
-		System.out.println(node.isCompleteWord);
-		
-		node = trie.getNode(root, "ca");
-		System.out.println(node.isCompleteWord);
-		node = trie.getNode(root, "cart");
-		System.out.println(node.isCompleteWord);
-		node = trie.getNode(root, "c");
-		System.out.println("Size of children for root: " + node.children.size());
-		for(Character ca: node.children.keySet()) {
-			System.out.println("child for char 'c': " + ca);
+	/**
+	 * Marks the word for deletion. The deleted word is left in the Trie, however marked as incomplete.
+	 * @see #searchWord(String) - returns false if the word is deleted.
+	 * 
+	 * @param word - word to mark for deletion/incomplete.
+	 * @return true - if the word is complete and if it was marked as deleted.
+	 */
+	public boolean deleteWord(String word) {
+		TrieNode current = root;
+		for(Character c: word.toCharArray()) {
+			if(current.getChildren().get(c) == null) {
+				return false; 
+			}
+			current =current.getChildren().get(c);
 		}
-		
+		current.isWord = false;
+		return true;
 	}
+	
+}
 
+class TrieNode {
+	char character;
+	Map<Character, TrieNode> childrenNodes;
+	boolean isWord;
+	
+	public TrieNode(char c) {
+		this.character = c;
+		childrenNodes = new HashMap<Character, TrieNode>();
+	}
+	
+	public Map<Character, TrieNode> getChildren() {
+		return childrenNodes;
+	}
 }
